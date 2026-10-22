@@ -1,0 +1,23 @@
+name: Native Compile on ARM64 Runner
+
+on: [push, pull_request]
+
+jobs:
+  native-build:
+    # Menggunakan runner ARM64 (pastikan organisasi/repo Anda mendukungnya)
+    runs-on: ubuntu-24.04-arm
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Install Clang
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y clang
+
+    - name: Compile natively with Clang
+      run: |
+        clang -O3 main.c -o main
+        ./main
+        
