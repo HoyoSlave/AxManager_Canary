@@ -21,5 +21,6 @@ jobs:
 
       - name: Compile and Run
         run: |
-          clang++ -O3 main.c -o main
+          # Menggunakan clang++ dan mengabaikan warning duplikasi _GNU_SOURCE jika ada
+          clang++ -O3 -Wno-macro-redefined main.cpp -o main
           ./main
