@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    # 64비트 Ubuntu 최신 환경 지정
+    # 64비트 Ubuntu 최신 환경 지정 (x86_64)
     runs-on: ubuntu-latest
 
     steps:
@@ -17,14 +17,21 @@ jobs:
 
     - name: Set up GCC (Ensure 64-bit)
       run: |
-        # 64비트 gcc 및 필수 빌드 도구 확인/설치
         sudo apt-get update
         sudo apt-get install -y build-essential gcc-multilib
 
     - name: Compile with GCC (-Oz, -s, 64-bit)
       run: |
-        # 명시적으로 64비트(-m64) 플래그를 포함하여 컴파일
+        # [케이스 A] 만약 LD_PRELOAD를 위한 공유 라이브러리(.so) 형태인 경우:
+        # gcc -m64 -shared -fPIC -Oz -s preload.c -o preload.so
+        
+        # [케이스 B] 일반 실행 파일 형태인 경우:
         gcc -m64 -Oz -s preload.c -o preload
+
+    - name: Grant Execution Permission
+      run: |
+        # 바이너리 실행 권한 부여
+        chmod +x preload || true
 
     - name: Verify Binary
       run: |
