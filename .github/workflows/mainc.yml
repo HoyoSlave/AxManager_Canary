@@ -1,11 +1,9 @@
-name: Compile Preload C
+name: Compile Preload for Android
 
 on:
   push:
     branches: [ "main", "master" ]
-  pull_request:
-    branches: [ "main", "master" ]
-  workflow_dispatch: # Memungkinkan tombol "Run workflow" manual di tab Actions
+  workflow_dispatch:
 
 jobs:
   build:
@@ -15,14 +13,20 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v4
 
-    - name: Compile with Min Size Optimization
+    - name: Setup Android NDK
+      uses: nttld/setup-ndk@v3
+      with:
+        ndk-version: r26c
+        add-to-path: true
+
+    - name: Cross-Compile for Android (ARM64)
       run: |
-        gcc -Os -s preload.c -o preload
-        strip preload
+        # Menggunakan toolchain clang dari NDK untuk API level 28 (Android 9+) ke atas
+        $CC -target aarch64-linux-android28 -Os -s preload.c -o preload
+        llvm-strip preload
 
     - name: Upload Binary Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: preload-binary
+        name: preload-android-arm64
         path: preload
-        
