@@ -1,26 +1,28 @@
-name: Native Compile on ARM64 Runner
+name: Compile Preload C
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "master" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "master" ]
+  workflow_dispatch: # Memungkinkan tombol "Run workflow" manual di tab Actions
 
 jobs:
-  native-build:
-    runs-on: ubuntu-24.04-arm
+  build:
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+    - name: Checkout Repository
+      uses: actions/checkout@v4
 
-      - name: Install Clang & C++ Standard Library
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y clang libc++-dev libc++abi-dev
+    - name: Compile with Min Size Optimization
+      run: |
+        gcc -Os -s preload.c -o preload
+        strip preload
 
-      - name: Compile and Run
-        run: |
-          # Menggunakan clang++ dan mengabaikan warning duplikasi _GNU_SOURCE jika ada
-          clang++ -O3 -Wno-macro-redefined main.cpp -o main
-          ./main
+    - name: Upload Binary Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: preload-binary
+        path: preload
+        
