@@ -1,32 +1,39 @@
-name: Compile Preload for Android
+name: Build Preload
 
 on:
   push:
-    branches: [ "main", "master" ]
-  workflow_dispatch:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
 
 jobs:
   build:
+    # 64비트 Ubuntu 최신 환경 지정
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v4
 
-    - name: Setup Android NDK
-      uses: nttld/setup-ndk@v3
-      with:
-        ndk-version: r26c
-        add-to-path: true
-
-    - name: Cross-Compile for Android (ARM64)
+    - name: Set up GCC (Ensure 64-bit)
       run: |
-        # Menggunakan toolchain clang dari NDK untuk API level 28 (Android 9+) ke atas
-        $CC -target aarch64-linux-android28 -Os -s preload.c -o preload
-        llvm-strip preload
+        # 64비트 gcc 및 필수 빌드 도구 확인/설치
+        sudo apt-get update
+        sudo apt-get install -y build-essential gcc-multilib
 
-    - name: Upload Binary Artifact
+    - name: Compile with GCC (-Oz, -s, 64-bit)
+      run: |
+        # 명시적으로 64비트(-m64) 플래그를 포함하여 컴파일
+        gcc -m64 -Oz -s preload.c -o preload
+
+    - name: Verify Binary
+      run: |
+        # 파일 정보 확인 (64-bit ELF 확인용)
+        file preload
+        ls -lh preload
+
+    - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: preload-android-arm64
+        name: preload-binary-64bit
         path: preload
